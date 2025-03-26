@@ -1,135 +1,124 @@
 
 import { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-type MonthlyData = {
+type FlightStat = {
   month: string;
   reservations: number;
-  revenue: number;
+  cancellations: number;
 };
 
-type PopularRoute = {
-  departureCity: string;
-  arrivalCity: string;
-  count: number;
+type DestinationStat = {
+  name: string;
+  value: number;
 };
 
-const mockMonthlyData: MonthlyData[] = [
-  { month: "Janvier", reservations: 120, revenue: 36000 },
-  { month: "Février", reservations: 145, revenue: 43500 },
-  { month: "Mars", reservations: 160, revenue: 48000 },
-  { month: "Avril", reservations: 190, revenue: 57000 },
-  { month: "Mai", reservations: 210, revenue: 63000 },
-  { month: "Juin", reservations: 230, revenue: 69000 }
+const mockFlightStats: FlightStat[] = [
+  { month: 'Jan', reservations: 65, cancellations: 5 },
+  { month: 'Fév', reservations: 59, cancellations: 4 },
+  { month: 'Mar', reservations: 80, cancellations: 7 },
+  { month: 'Avr', reservations: 81, cancellations: 6 },
+  { month: 'Mai', reservations: 90, cancellations: 8 },
+  { month: 'Juin', reservations: 125, cancellations: 12 },
 ];
 
-const mockPopularRoutes: PopularRoute[] = [
-  { departureCity: "Paris", arrivalCity: "New York", count: 450 },
-  { departureCity: "London", arrivalCity: "Tokyo", count: 325 },
-  { departureCity: "Berlin", arrivalCity: "Dubai", count: 280 },
-  { departureCity: "Paris", arrivalCity: "Los Angeles", count: 265 },
-  { departureCity: "Madrid", arrivalCity: "Buenos Aires", count: 240 }
+const mockDestinationStats: DestinationStat[] = [
+  { name: 'Paris', value: 35 },
+  { name: 'New York', value: 25 },
+  { name: 'Tokyo', value: 20 },
+  { name: 'London', value: 15 },
+  { name: 'Dubai', value: 10 },
 ];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const Statistics = () => {
   const [period, setPeriod] = useState('6months');
-  
-  // In a real application, this would fetch data from the backend based on the selected period
-  const monthlyData = mockMonthlyData;
-  const popularRoutes = mockPopularRoutes;
-  
-  const totalReservations = monthlyData.reduce((sum, data) => sum + data.reservations, 0);
-  const totalRevenue = monthlyData.reduce((sum, data) => sum + data.revenue, 0);
-  
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-blue-600 mb-6">Statistiques</h1>
       
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-blue-600">Aperçu</h2>
-          
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-blue-600">Aperçu des statistiques</h2>
           <select 
-            value={period}
+            value={period} 
             onChange={(e) => setPeriod(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2"
+            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="month">Dernier mois</option>
+            <option value="1month">Dernier mois</option>
             <option value="3months">3 derniers mois</option>
             <option value="6months">6 derniers mois</option>
-            <option value="year">Dernière année</option>
+            <option value="1year">Dernière année</option>
           </select>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-blue-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-600 mb-2">Réservations totales</h3>
-            <p className="text-3xl font-bold">{totalReservations}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-700">Réservations par mois</h3>
+            <div className="h-80 bg-gray-50 p-4 rounded-lg">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={mockFlightStats}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="reservations" fill="#3B82F6" name="Réservations" />
+                  <Bar dataKey="cancellations" fill="#EF4444" name="Annulations" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
           
-          <div className="bg-green-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-green-600 mb-2">Revenus totaux</h3>
-            <p className="text-3xl font-bold">{totalRevenue.toLocaleString('fr-FR')} €</p>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-700">Destinations populaires</h3>
+            <div className="h-80 bg-gray-50 p-4 rounded-lg">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={mockDestinationStats}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {mockDestinationStats.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       </div>
       
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-blue-600 mb-4">Réservations mensuelles</h2>
-          
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mois</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Réservations</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenus</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {monthlyData.map((data, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {data.month}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {data.reservations}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {data.revenue.toLocaleString('fr-FR')} €
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <h3 className="text-xl font-bold text-blue-600 mb-3">Total des réservations</h3>
+          <p className="text-4xl font-bold text-gray-800">512</p>
+          <p className="text-green-600 mt-2">↑ 12% par rapport au mois dernier</p>
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-blue-600 mb-4">Routes les plus populaires</h2>
-          
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Réservations</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {popularRoutes.map((route, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {route.departureCity} → {route.arrivalCity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {route.count}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <h3 className="text-xl font-bold text-blue-600 mb-3">Taux d'occupation</h3>
+          <p className="text-4xl font-bold text-gray-800">87%</p>
+          <p className="text-green-600 mt-2">↑ 5% par rapport au mois dernier</p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-xl font-bold text-blue-600 mb-3">Annulations</h3>
+          <p className="text-4xl font-bold text-gray-800">42</p>
+          <p className="text-red-600 mt-2">↑ 2% par rapport au mois dernier</p>
         </div>
       </div>
     </div>
